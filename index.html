@@ -146,10 +146,11 @@
       });
 
       const data = await response.json();
+      const cost = data.estimated_offset_cost
       if (data.estimated_offset_cost) {
           row.cells[6].textContent = `$${data.estimated_offset_cost.toFixed(2)} USD`;
         } else {
-          row.cells[6].textContent = 'Unknown';
+          row.cells[6].textContent = cost;
         }
       } catch (err) {
         console.error('API error:', err);
