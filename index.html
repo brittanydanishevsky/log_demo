@@ -150,7 +150,7 @@
       if (typeof cost === 'number') {
         row.cells[5].textContent = `$${cost.toFixed(2)} USD`;
       } else {
-        row.cells[5].textContent = cost || 'Unknown';
+        row.cells[5].textContent = 'WE ARE HERE'
       }
       } catch (err) {
         console.error('API error:', err);
