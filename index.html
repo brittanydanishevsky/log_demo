@@ -146,14 +146,14 @@
       });
 
       const data = await response.json();
-      if (typeof data.estimated_offset_cost === 'number') {
-          row.cells[5].textContent = `$${data.estimated_offset_cost.toFixed(2)} USD`;
+      if (data.estimated_offset_cost) {
+          row.cells[6].textContent = `$${data.estimated_offset_cost.toFixed(2)} USD`;
         } else {
-          row.cells[5].textContent = 'Unknown';
+          row.cells[6].textContent = 'Unknown';
         }
       } catch (err) {
         console.error('API error:', err);
-        row.cells[5].textContent = 'Error';
+        row.cells[6].textContent = 'Error';
       }
   }
   </script>
