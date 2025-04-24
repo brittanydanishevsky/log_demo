@@ -147,15 +147,10 @@
 
       const data = await response.json();
       const cost = data.estimated_offset_cost || 'Unknown';
-
-      if (typeof cost === 'number') {
       row.cells[5].textContent = `$${cost.toFixed(2)} USD`;
-      } else {
-      row.cells[5].textContent = 'No cost returned';
-      }
       } catch (err) {
-      console.error('Offset API error:', err);
-      row.cells[5].textContent = 'Error';
+        console.error('API error:', error);
+        newRow.cells[4].textContent = 'Error';
     }
   }
   </script>
