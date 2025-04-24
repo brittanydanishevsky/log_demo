@@ -146,8 +146,7 @@
       });
 
       const data = await response.json();
-      const cost = data.estimated_offset_cost || 'Unknown';
-      row.cells[5].textContent = `$${cost.toFixed(2)} USD`;
+      row.cells[4].textContent = `$${data.estimated_offset_cost} USD` || 'Unknown';
       } catch (err) {
         console.error('API error:', error);
         newRow.cells[4].textContent = 'Error';
