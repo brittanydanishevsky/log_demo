@@ -25,6 +25,8 @@
         <th>Mode</th>
         <th>Containers</th>
         <th>Emissions (tonnes CO₂e)</th>
+        <th>Offsetting</th>
+
       </tr>
     </thead>
     <tbody>
@@ -34,6 +36,7 @@
         <td>Sea</td>
         <td>5</td>
         <td>3.420908</td>
+        <td><button onclick="offsetEmissions(this)">Offset Emissions</button></td>
       </tr>
       <tr>
         <td>NLRTM</td>
@@ -41,6 +44,7 @@
         <td>Sea</td>
         <td>2</td>
         <td>1.104852</td>
+        <td><button onclick="offsetEmissions(this)">Offset Emissions</button></td>
       </tr>
     </tbody>
   </table>
@@ -77,6 +81,7 @@
         <td>Sea</td>
         <td>${containers}</td>
         <td>Calculating...</td>
+        <td><button onclick="offsetEmissions(this)">Offset Emissions</button></td>
       `;
       document.querySelector('#shipmentTable tbody').appendChild(newRow);
 
@@ -115,6 +120,42 @@
 
       e.target.reset();
     });
+
+  async function offsetEmissions(button) {
+    const row = button.closest('tr');
+    const emissionsText = row.cells[4].textContent;
+    const emissions = parseFloat(emissionsText);
+
+    if (isNaN(emissions)) {
+      row.cells[5].textContent = 'Invalid emission data';
+      return;
+    }
+
+    row.cells[5].textContent = 'Calculating...';
+
+    try {
+      const response = await fetch('/api/offset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          mass: {
+            amount: emissions,
+            unit: "t"
+          }
+        })
+      });
+
+      const data = await response.json();
+      const cost = data.estimated_offset_cost || 'Unknown';
+
+      row.cells[5].textContent = typeof cost === 'number'
+        ? `$${cost.toFixed(2)}`
+        : cost;
+    } catch (err) {
+      console.error('Offset API error:', err);
+      row.cells[5].textContent = 'Error';
+    }
+  }
   </script>
 </body>
 </html>
