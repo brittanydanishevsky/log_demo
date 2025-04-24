@@ -149,8 +149,8 @@
       const cost = data.estimated_offset_cost || 'Unknown';
 
       row.cells[5].textContent = typeof cost === 'number'
-        ? `$${cost.toFixed(2)}`
-        : cost;
+      ? `$${cost.toFixed(2)} USD`
+      : cost;
     } catch (err) {
       console.error('Offset API error:', err);
       row.cells[5].textContent = 'Error';
