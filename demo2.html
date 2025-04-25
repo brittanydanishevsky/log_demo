@@ -244,9 +244,13 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             shipment: {mass: mass},
-            method: apiTransportMode, 
-            source,
-            destination
+            legs: {
+                method: apiTransportMode, 
+                route: {
+                    source,
+                    destination
+                }
+            }
           })
         });
 
