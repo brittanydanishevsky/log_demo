@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demo 2 – Emission Estimator with Address Mapping</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+    input {
+      width: 100%;
+      margin-bottom: 0.25rem;
+      padding: 0.25rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      margin-top: 0.5rem;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Estimate Emissions from Product Line + Address</h1>
+
+  <table>
+    <tr>
+        <td>
+          <input type="text" value="FedEx Priority">
+        </td>
+        <td>
+          <input placeholder="Street Line 1" value="LYONGADE 21"><br>
+          <input placeholder="Street Line 2"><br>
+          <input placeholder="City" value="København S"><br>
+          <input placeholder="Postcode" value="2300"><br>
+          <input placeholder="Country Code" value="DK">
+        </td>
+        <td>
+          <input placeholder="Street Line 1" value="Flat A, 1/F, Tower 5 Pacific Palisades"><br>
+          <input placeholder="Street Line 2" value="No. 1 Braemar Hill Road North Point"><br>
+          <input placeholder="City" value="Hong Kong"><br>
+          <input placeholder="Postcode" value="0000"><br>
+          <input placeholder="Country Code" value="HK">
+        </td>
+        <td><input placeholder="Mass" value="0.7500"></td>
+        <td><button onclick="startEstimate(this)">Calculate Emissions</button></td>
+        <td></td>
+      </tr>
+      
+      <tr>
+        <td>
+          <input type="text" value="GLS Parcel Shop Delivery">
+        </td>
+        <td>
+          <input placeholder="Street Line 1" value="Lyongade 21"><br>
+          <input placeholder="Street Line 2"><br>
+          <input placeholder="City" value="Copenhagen S"><br>
+          <input placeholder="Postcode" value="2300"><br>
+          <input placeholder="Country Code" value="DK">
+        </td>
+        <td>
+          <input placeholder="Street Line 1" value="Baundalsvej 4"><br>
+          <input placeholder="Street Line 2"><br>
+          <input placeholder="City" value="HELSINGE"><br>
+          <input placeholder="Postcode" value="3200"><br>
+          <input placeholder="Country Code" value="DK">
+        </td>
+        <td><input placeholder="Mass" value="2.000"></td>
+        <td><button onclick="startEstimate(this)">Calculate Emissions</button></td>
+        <td></td>
+      </tr>
+      
+      <tr>
+        <td>
+          <input type="text" value="GLS Business Parcel Domestic">
+        </td>
+        <td>
+          <input placeholder="Street Line 1" value="Baundalsvej 4"><br>
+          <input placeholder="Street Line 2"><br>
+          <input placeholder="City" value="HELSINGE"><br>
+          <input placeholder="Postcode" value="3200"><br>
+          <input placeholder="Country Code" value="DK">
+        </td>
+        <td>
+          <input placeholder="Street Line 1" value="Lyongade 21"><br>
+          <input placeholder="Street Line 2"><br>
+          <input placeholder="City" value="Copenhagen S"><br>
+          <input placeholder="Postcode" value="2300"><br>
+          <input placeholder="Country Code" value="DK">
+        </td>
+        <td><input placeholder="Mass" value="2.000"></td>
+        <td><button onclick="startEstimate(this)">Calculate Emissions</button></td>
+        <td></td>
+      </tr>      
+  </table>
+
+  <div class="modal" id="modeModal">
+    <div class="modal-content">
+      <p id="modal-text"></p>
+      <button onclick="useSuggested()">Use Suggested Mode</button><br><br>
+      <select id="manualSelect">
+        <option value="">-- Select a transport mode --</option>
+        <option value="air">Air</option>
+        <option value="road">Road</option>
+        <option value="rail">Rail</option>
+        <option value="sea">Sea</option>
+      </select>
+      <button onclick="useManual()">Use Selected Mode</button>
+    </div>
+  </div>
+
+  <script>
+
+    function toTitleCase(str) {
+    return str
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+
+    function startEstimate(button) {
+        selectedRow = button.closest('tr');
+
+        const productLine = selectedRow.cells[0].querySelector("input").value.toLowerCase();
+        const sourceInputs = selectedRow.cells[1].querySelectorAll("input");
+        const destinationInputs = selectedRow.cells[2].querySelectorAll("input");
+
+        const sourceCity = sourceInputs[2].value;
+        const destinationCity = destinationInputs[2].value;
+        const sourceCountry = sourceInputs[4].value.trim().toUpperCase();
+        const destinationCountry = destinationInputs[4].value.trim().toUpperCase();
+
+        const isPriority = /express|expedited|priority/.test(productLine);
+        const isInternational = sourceCountry !== destinationCountry;
+
+        if (isPriority && isInternational) {
+            inferredMode = "air";
+        } else if (!isPriority && isInternational) {
+            inferredMode = "sea";
+        } else if (isPriority && !isInternational) {
+            inferredMode = "road";
+        } else {
+            inferredMode = "rail";
+        }
+
+        const message = `The "${toTitleCase(productLine)}" service for travel between ${toTitleCase(sourceCity)} (${sourceCountry}) and ${toTitleCase(destinationCity)} (${destinationCountry}) is typically "${toTitleCase(inferredMode)}". Would you like to override the transport mode?`;
+
+        document.getElementById("modal-text").textContent = message;
+        document.getElementById("manualSelect").value = "";
+        document.getElementById("modeModal").style.display = "flex";
+    }
+
+
+    function useSuggested() {
+      document.getElementById("modeModal").style.display = "none";
+      sendEstimate(inferredMode);
+    }
+
+    function useManual() {
+      const manualMode = document.getElementById("manualSelect").value;
+      if (!manualMode) {
+        alert("Please select a mode.");
+        return;
+      }
+      document.getElementById("modeModal").style.display = "none";
+      sendEstimate(manualMode);
+    }
+
+    async function sendEstimate(mode) {
+
+      const sourceInputs = selectedRow.cells[1].querySelectorAll("input");
+      const destinationInputs = selectedRow.cells[2].querySelectorAll("input");
+      const massInput = selectedRow.cells[3].querySelector("input"); 
+
+      const source = {
+        street_line1: sourceInputs[0].value,
+        street_line2: sourceInputs[1].value,
+        city: sourceInputs[2].value,
+        postcode: sourceInputs[3].value,
+        country_code: sourceInputs[4].value
+      };
+
+      const destination = {
+        street_line1: destinationInputs[0].value,
+        street_line2: destinationInputs[1].value,
+        city: destinationInputs[2].value,
+        postcode: destinationInputs[3].value,
+        country_code: destinationInputs[4].value
+      };
+
+      const mass = {
+        amount: massInput.value,
+        unit: "t"
+      }
+
+      let apiTransportMode;
+
+        if (mode === 'road') {
+        apiTransportMode = 'diesel_truck';
+        } else if (mode === 'rail') {
+        apiTransportMode = 'diesel_freight_train';
+        } else if (mode === 'air') {
+        apiTransportMode = 'cargo_plane';
+        } else if (mode === 'sea') {
+        apiTransportMode = {vessel_type: "container_ship"};
+        } else {
+        apiTransportMode = 'unspecified';
+        }
+
+      selectedRow.cells[4].textContent = "Calculating...";
+
+      try {
+        const response = await fetch('/api/emissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mass: mass,
+            method: apiTransportMode, 
+            source,
+            destination
+          })
+        });
+
+        const data = await response.json();
+        selectedRow.cells[4].textContent = data.estimated_emissions + " tonnes CO₂e";
+      } catch (err) {
+        console.error(err);
+        selectedRow.cells[4].textContent = "Error estimating emissions.";
+      }
+    }
+  </script>
+
+</body>
+</html>

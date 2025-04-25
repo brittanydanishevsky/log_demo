@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Freight Dashboard</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+    h1 { margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    form { background: white; padding: 20px; border: 1px solid #ccc; }
+    label { display: block; margin: 10px 0 5px; }
+    input, select { width: 100%; padding: 8px; margin-bottom: 10px; }
+    button { padding: 10px 15px; background: #007BFF; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Recent Shipments</h1>
+  <table id="shipmentTable">
+    <thead>
+      <tr>
+        <th>Origin</th>
+        <th>Destination</th>
+        <th>Mode</th>
+        <th>Containers</th>
+        <th>Emissions (tonnes CO₂e)</th>
+        <th>Offsetting</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>CNSHA</td>
+        <td>USLAX</td>
+        <td>Sea</td>
+        <td>5</td>
+        <td>3.420908</td>
+        <td><button onclick="offsetEmissions(this)">Offset Emissions</button></td>
+      </tr>
+      <tr>
+        <td>NLRTM</td>
+        <td>USNYC</td>
+        <td>Sea</td>
+        <td>2</td>
+        <td>1.104852</td>
+        <td><button onclick="offsetEmissions(this)">Offset Emissions</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Add New Shipment</h2>
+  <form id="shipmentForm">
+    <label for="origin">Origin Port:</label>
+    <input type="text" id="origin" required />
+
+    <label for="destination">Destination Port:</label>
+    <input type="text" id="destination" required />
+
+    <input type="hidden" id="mode" value="container_ship" />
+
+    <label for="containers">Number of Containers:</label>
+    <input type="number" id="containers" required />
+
+    <button type="submit">Add Shipment</button>
+  </form>
+
+  <script>
+    document.getElementById('shipmentForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const origin = document.getElementById('origin').value;
+      const destination = document.getElementById('destination').value;
+      const mode = 'container_ship';
+      const containers = document.getElementById('containers').value;
+
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td>${origin}</td>
+        <td>${destination}</td>
+        <td>Sea</td>
+        <td>${containers}</td>
+        <td>Calculating...</td>
+        <td><button onclick="offsetEmissions(this)">Offset Emissions</button></td>
+      `;
+      document.querySelector('#shipmentTable tbody').appendChild(newRow);
+
+      try {
+        const response = await fetch('/api/emissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shipment: {
+              containers: containers
+            },
+            legs: [
+              {
+                route: {
+                  source: {
+                    locode: origin
+                  },
+                  destination: {
+                    locode: destination
+                  }
+                },
+                method: {
+                    vessel_type: mode
+                }
+              }
+            ]
+          })
+        });
+
+        const data = await response.json();
+        newRow.cells[4].textContent = data.legs[0].mass.amount || 'Success';
+      } catch (error) {
+        console.error('API error:', error);
+        newRow.cells[4].textContent = 'Error';
+      }
+
+      e.target.reset();
+    });
+
+  async function offsetEmissions(button) {
+    const row = button.closest('tr');
+    const emissionsText = row.cells[4].textContent;
+    const emissions = parseFloat(emissionsText);
+
+    if (isNaN(emissions)) {
+      row.cells[5].textContent = 'Invalid emission data';
+      return;
+    }
+
+    row.cells[5].textContent = 'Calculating...';
+
+    try {
+      const response = await fetch('/api/offset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          mass: {
+            amount: String(emissions),
+            unit: 't'
+          }
+        })
+      });
+
+      const data = await response.json();
+      const cost = data.estimated_offset_cost
+      if (typeof cost === 'number') {
+        row.cells[5].textContent = `$${cost.toFixed(2)} USD`;
+      } else {
+        row.cells[5].textContent = `$${cost} USD`;
+      }
+      } catch (err) {
+        console.error('API error:', err);
+        row.cells[6].textContent = 'Error';
+      }
+  }
+  </script>
+</body>
+</html>
