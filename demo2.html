@@ -168,6 +168,9 @@
   
 
   <script>
+    function showLogic() {
+        document.getElementById('logicModal').style.display = 'flex';
+    }
 
     function toTitleCase(str) {
     return str
@@ -286,6 +289,12 @@
 
         const data = await response.json();
         selectedRow.cells[4].textContent = data.mass.amount + " tonnes CO₂e";
+
+        selectedRow.cells[4].textContent = data.estimated_emissions + " kg CO₂e";
+
+        // Show Recalculate button
+        const recalcBtn = selectedRow.querySelector('.recalc-button');
+        if (recalcBtn) recalcBtn.style.display = 'inline-block';
       } catch (err) {
         console.error(err);
         selectedRow.cells[4].textContent = "Error estimating emissions.";
