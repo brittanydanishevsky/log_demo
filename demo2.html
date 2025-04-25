@@ -74,8 +74,7 @@
         </td>
         <td><input placeholder="Mass" value="0.7500"></td>
         <td>
-            <button onclick="startEstimate(this)">Calculate Emissions</button><br>
-            <button onclick="startEstimate(this)" style="display:none;" class="recalc-button">Recalculate</button>
+            <button onclick="startEstimate(this)">Calculate Emissions</button>
         </td>
       </tr>
       
@@ -99,8 +98,7 @@
         </td>
         <td><input placeholder="Mass" value="2.000"></td>
         <td>
-            <button onclick="startEstimate(this)">Calculate Emissions</button><br>
-            <button onclick="startEstimate(this)" style="display:none;" class="recalc-button">Recalculate</button>
+            <button onclick="startEstimate(this)">Calculate Emissions</button>
         </td>
       </tr>
       
@@ -124,8 +122,7 @@
         </td>
         <td><input placeholder="Mass" value="2.000"></td>
         <td>
-            <button onclick="startEstimate(this)">Calculate Emissions</button><br>
-            <button onclick="startEstimate(this)" style="display:none;" class="recalc-button">Recalculate</button>
+            <button onclick="startEstimate(this)">Calculate Emissions</button>
         </td>
       </tr>      
   </table>
@@ -290,8 +287,6 @@
         const data = await response.json();
         selectedRow.cells[4].textContent = data.mass.amount + " tonnes CO₂e";
 
-        const recalcBtn = selectedRow.querySelector('.recalc-button');
-        if (recalcBtn) recalcBtn.style.display = 'inline-block';
       } catch (err) {
         console.error(err);
         selectedRow.cells[4].textContent = "Error estimating emissions.";
