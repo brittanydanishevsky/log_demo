@@ -61,14 +61,14 @@
           <input placeholder="Street Line 2"><br>
           <input placeholder="City" value="København S"><br>
           <input placeholder="Postcode" value="2300"><br>
-          <input placeholder="Country Code" value="DK">
+          <input placeholder="Three Letter Country Code" value="DNK">
         </td>
         <td>
           <input placeholder="Street Line 1" value="Flat A, 1/F, Tower 5 Pacific Palisades"><br>
           <input placeholder="Street Line 2" value="No. 1 Braemar Hill Road North Point"><br>
           <input placeholder="City" value="Hong Kong"><br>
           <input placeholder="Postcode" value="0000"><br>
-          <input placeholder="Country Code" value="HK">
+          <input placeholder="Three Letter Country Code" value="HKG">
         </td>
         <td><input placeholder="Mass" value="0.7500"></td>
         <td><button onclick="startEstimate(this)">Calculate Emissions</button></td>
@@ -84,14 +84,14 @@
           <input placeholder="Street Line 2"><br>
           <input placeholder="City" value="Copenhagen S"><br>
           <input placeholder="Postcode" value="2300"><br>
-          <input placeholder="Country Code" value="DK">
+          <input placeholder="Three Letter Country Code" value="DNK">
         </td>
         <td>
           <input placeholder="Street Line 1" value="Baundalsvej 4"><br>
           <input placeholder="Street Line 2"><br>
           <input placeholder="City" value="HELSINGE"><br>
           <input placeholder="Postcode" value="3200"><br>
-          <input placeholder="Country Code" value="DK">
+          <input placeholder="Three Letter Country Code" value="DNK">
         </td>
         <td><input placeholder="Mass" value="2.000"></td>
         <td><button onclick="startEstimate(this)">Calculate Emissions</button></td>
@@ -107,14 +107,14 @@
           <input placeholder="Street Line 2"><br>
           <input placeholder="City" value="HELSINGE"><br>
           <input placeholder="Postcode" value="3200"><br>
-          <input placeholder="Country Code" value="DK">
+          <input placeholder="Three Letter Country Code" value="DNK">
         </td>
         <td>
           <input placeholder="Street Line 1" value="Lyongade 21"><br>
           <input placeholder="Street Line 2"><br>
           <input placeholder="City" value="Copenhagen S"><br>
           <input placeholder="Postcode" value="2300"><br>
-          <input placeholder="Country Code" value="DK">
+          <input placeholder="Three Letter Country Code" value="DNK">
         </td>
         <td><input placeholder="Mass" value="2.000"></td>
         <td><button onclick="startEstimate(this)">Calculate Emissions</button></td>
@@ -127,7 +127,7 @@
       <p id="modal-text"></p>
       <button onclick="useSuggested()">Use Suggested Mode</button><br><br>
       <select id="manualSelect">
-        <option value="">-- Select a transport mode --</option>
+        <option value="">Select a transport mode</option>
         <option value="air">Air</option>
         <option value="road">Road</option>
         <option value="rail">Rail</option>
@@ -255,7 +255,7 @@
         });
 
         const data = await response.json();
-        selectedRow.cells[4].textContent = data.estimated_emissions + " tonnes CO₂e";
+        selectedRow.cells[4].textContent = data.mass.amount + " tonnes CO₂e";
       } catch (err) {
         console.error(err);
         selectedRow.cells[4].textContent = "Error estimating emissions.";
